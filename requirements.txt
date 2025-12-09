@@ -1,7 +1,8 @@
 termcolor>=2.4.0
 beautifulsoup4>=4.12.3
 requests>=2.32.3
-htmlmin>=0.1.12
 tldextract>=5.1.2
 colorama>=0.4.6
 urllib3>=2.2.3
+# Note: htmlmin is optional and not compatible with Python 3.13+
+# The script will work without it (minification will be skipped)

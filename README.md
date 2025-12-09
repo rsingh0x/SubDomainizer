@@ -1,4 +1,4 @@
-[![Python 3.x](https://img.shields.io/badge/python-%3E3.5-yellow.svg)](https://www.python.org/) 
+[![Python 3.x](https://img.shields.io/badge/python-3.8%2B%20%7C%203.13%2B-yellow.svg)](https://www.python.org/) 
 [![Twitter](https://img.shields.io/badge/twitter-@neeraj_sonaniya-blue.svg)](https://twitter.com/neeraj_sonaniya)
 
 ## Buy Me A [Coffee](https://www.buymeacoffee.com/neerajson)
@@ -44,9 +44,24 @@ cd SubDomainizer
 
 3. Install the requirements:
 
+**Option A: Using virtual environment (Recommended)**
+```bash
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
 ```
+
+**Option B: System-wide installation**
+```bash
+# For most systems
 pip3 install -r requirements.txt
+
+# For Homebrew Python on macOS (if you get "externally-managed-environment" error)
+python3 -m pip install --user --break-system-packages -r requirements.txt
 ```
+
+**Note for Python 3.13+ users**: The `htmlmin` package is not compatible with Python 3.13+. The tool will work without it (HTML minification will be skipped, but all subdomain/secret finding features work normally).
+
 4. Enjoy the Tool.
 
 ## Update to latest version:

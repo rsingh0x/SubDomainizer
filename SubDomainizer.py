@@ -19,7 +19,10 @@ import requests
 import re
 import socket
 import ssl
-import htmlmin
+try:
+    import htmlmin
+except ImportError:
+    htmlmin = None
 from urllib.parse import urlparse, urljoin, unquote
 import tldextract
 import sys
@@ -211,8 +214,11 @@ class JsExtract:
 
         try:
             html = unquote(req.content.decode('unicode-escape'))
-            minhtml = htmlmin.minify(html, remove_empty_space=True)
-            minhtml = minhtml.replace('\n', '')
+            if htmlmin:
+                minhtml = htmlmin.minify(html, remove_empty_space=True)
+                minhtml = minhtml.replace('\n', '')
+            else:
+                minhtml = html.replace('\n', '')
             finallist.append(minhtml)
             new_final_dict["Inline"] = minhtml
             print(termcolor.colored("Successfully got all the Inline Scripts.", color='blue', attrs=['bold']))
@@ -524,7 +530,7 @@ def get_info_from_data(item_url, item_values, cloudlist, p, regex, ipv4reg, url,
 
 def custom_domains_regex(domains):
     _domains = ''
-    prefix = '[a-zA-Z0-9][0-9a-zA-Z\-.]*\.'
+    prefix = r'[a-zA-Z0-9][0-9a-zA-Z\-.]*\.'
     for domain in domains.split(','):
         _domains += prefix + domain + '|'
     domainreg = re.compile(r'(' + _domains[:-1] + ')', re.IGNORECASE)
