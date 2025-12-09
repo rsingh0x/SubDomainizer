@@ -20,10 +20,10 @@ import re
 import socket
 import ssl
 import htmlmin
-from urllib.parse import *
+from urllib.parse import urlparse, urljoin, unquote
 import tldextract
 import sys
-from multiprocessing.dummy import Pool as ThreadPool
+from concurrent.futures import ThreadPoolExecutor
 from itertools import repeat
 from collections import Counter
 from math import log2
@@ -617,19 +617,15 @@ def subextractor(cloudlist, p, regex, ipv4reg, url, precompiled_domains_regex):
     jsfile = JsExtract()
     jsfile.IntJsExtract(url, heads)
     jsfile.ExtJsExtract(url, heads)
-    jsthread = ThreadPool(8)
-    jsthread.map(jsfile.SaveExtJsContent, jsLinkList)
-    jsthread.close()
-    jsthread.join()
+    with ThreadPoolExecutor(max_workers=8) as jsthread:
+        jsthread.map(jsfile.SaveExtJsContent, jsLinkList)
     print(termcolor.colored("Finding secrets, cloud URLs, subdomains in all Javascript files...",
                             color='yellow',
                             attrs=['bold']))
-    threads = ThreadPool(8)
-    threads.starmap(get_info_from_data,
+    with ThreadPoolExecutor(max_workers=8) as threads:
+        threads.map(lambda args: get_info_from_data(*args),
                     zip(new_final_dict.keys(), new_final_dict.values(), repeat(cloudlist), repeat(p), repeat(regex),
                         repeat(ipv4reg), repeat(url), repeat(precompiled_domains_regex)))
-    threads.close()
-    threads.join()
     print(termcolor.colored("Searching completed...", color='blue', attrs=['bold']))
     finallist.clear()
 
@@ -806,18 +802,18 @@ if __name__ == "__main__":
                     print(termcolor.colored(
                         'Searching in github for : ' + termcolor.colored(item, color='green', attrs=['bold']), color='blue', attrs=['bold']))
 
-                    gitThread = ThreadPool(8)
-                    contentApiURLs = getUrlsFromData(gitToken, str(item))
-                    gitThread.map(get_github_data, contentApiURLs)
-                    gitContentThread = ThreadPool(8)
-                    try:
-                        gitContentThread.starmap(get_info_from_data,
-                                                 zip(git_data.keys(), git_data.values(), repeat(compiledRegexCloud),
-                                                     repeat(compiledRegexSecretList),
-                                                     repeat(compiledRegexDomain), repeat(compiledRegexIP),
-                                                     repeat(item), repeat(custom_domains_regex)))
-                    except:
-                        pass
+                    with ThreadPoolExecutor(max_workers=8) as gitThread:
+                        contentApiURLs = getUrlsFromData(gitToken, str(item))
+                        gitThread.map(get_github_data, contentApiURLs)
+                    with ThreadPoolExecutor(max_workers=8) as gitContentThread:
+                        try:
+                            gitContentThread.map(lambda args: get_info_from_data(*args),
+                                                     zip(git_data.keys(), git_data.values(), repeat(compiledRegexCloud),
+                                                         repeat(compiledRegexSecretList),
+                                                         repeat(compiledRegexDomain), repeat(compiledRegexIP),
+                                                         repeat(item), repeat(custom_domains_regex)))
+                        except:
+                            pass
                     print(termcolor.colored('Completed finding from github...', color='blue', attrs=['bold']))
 
 
